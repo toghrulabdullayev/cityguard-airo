@@ -16,16 +16,23 @@ function AnimatedRouter() {
   const [userEmail, setUserEmail] = useState<string | null>(() => {
     return sessionStorage.getItem('userEmail');
   });
+  const [authToken, setAuthToken] = useState<string | null>(() => {
+    return sessionStorage.getItem('authToken');
+  });
 
-  const handleLoginSuccess = (email: string) => {
+  const handleLoginSuccess = (email: string, token: string) => {
     sessionStorage.setItem('userEmail', email);
+    sessionStorage.setItem('authToken', token);
     setUserEmail(email);
+    setAuthToken(token);
     navigate('/dashboard');
   };
 
   const handleLogout = () => {
     sessionStorage.removeItem('userEmail');
+    sessionStorage.removeItem('authToken');
     setUserEmail(null);
+    setAuthToken(null);
     navigate('/');
   };
 
@@ -81,6 +88,7 @@ function AnimatedRouter() {
               >
                 <DashboardPage 
                   userEmail={userEmail} 
+                  authToken={authToken}
                   onLogout={handleLogout} 
                 />
               </motion.div>

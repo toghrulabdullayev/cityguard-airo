@@ -22,6 +22,7 @@ import AuditLedger from '../components/AuditLedger';
 
 interface DashboardPageProps {
   userEmail: string;
+  authToken: string | null;
   onLogout: () => void;
 }
 
@@ -174,22 +175,33 @@ export default function DashboardPage({ userEmail, onLogout }: DashboardPageProp
   }, []);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setTransactions(prev => {
+    const interval = setInterval(async () => {
+      try {
+        const newTx = await threatApi.getLatestTransaction();
+        setTransactions(prev => {
+          const updatedList = [newTx, ...prev.filter(t => t.id !== newTx.id)];
+          if (updatedList.length > 50) {
+            updatedList.pop();
+          }
+          if (!selectedTxId) {
+            setSelectedTxId(newTx.id);
+          }
+          return updatedList;
+        });
+      } catch {
+        // Fall back to local generation if backend unavailable
         const newTx = generateMockTransaction(rules);
-        const updatedList = [newTx, ...prev];
-        
-        // Capping ledger limits to prevent frame overflow
-        if (updatedList.length > 50) {
-          updatedList.pop();
-        }
-
-        if (!selectedTxId) {
-          setSelectedTxId(newTx.id);
-        }
-
-        return updatedList;
-      });
+        setTransactions(prev => {
+          const updatedList = [newTx, ...prev];
+          if (updatedList.length > 50) {
+            updatedList.pop();
+          }
+          if (!selectedTxId) {
+            setSelectedTxId(newTx.id);
+          }
+          return updatedList;
+        });
+      }
 
       setCumulativeStats(prev => {
         const flagIncrement = Math.random() > 0.82 ? 1 : 0;

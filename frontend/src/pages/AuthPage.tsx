@@ -7,32 +7,40 @@ import React, { useState } from 'react';
 import { Shield, Lock, User, AlertTriangle, ArrowRight, ArrowLeft } from 'lucide-react';
 
 interface AuthPageProps {
-  onLoginSuccess: (email: string) => void;
+  onLoginSuccess: (email: string, token: string) => void;
   onBackToLanding: () => void;
 }
 
 export default function AuthPage({ onLoginSuccess, onBackToLanding }: AuthPageProps) {
-  const [email, setEmail] = useState('analyst@shield.net');
-  const [password, setPassword] = useState('sentinel');
+  const [email, setEmail] = useState('analyst@cityguard.ai');
+  const [password, setPassword] = useState('analyst123');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setLoading(true);
 
-    setTimeout(() => {
-      if (!email.trim() || !password.trim()) {
-        setError('CRITICAL_ERROR: AUTHENTICATION CREDENTIAL LAYERS CANNOT BE BLANK // TRY AGAIN');
-        setLoading(false);
-        return;
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Authentication failed');
       }
 
-      // Accept inputs representing clearance verify
-      onLoginSuccess(email);
+      onLoginSuccess(data.user.email, data.token);
+    } catch (err: any) {
+      setError(err.message || 'CRITICAL_ERROR: AUTHENTICATION CREDENTIAL LAYERS CANNOT BE BLANK // TRY AGAIN');
+    } finally {
       setLoading(false);
-    }, 600);
+    }
   };
 
   return (
@@ -97,7 +105,7 @@ export default function AuthPage({ onLoginSuccess, onBackToLanding }: AuthPagePr
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="analyst@shield.net"
+                placeholder="analyst@cityguard.ai"
                 className="w-full pl-10 pr-4 py-3 bg-neutral-secondary-medium border border-default-medium text-heading text-[13px] font-mono placeholder-body-subtle/40 focus:border-brand focus:ring-1 focus:ring-brand outline-none transition-all clip-btn"
                 required
               />

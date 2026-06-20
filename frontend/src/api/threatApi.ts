@@ -9,6 +9,15 @@ import { Transaction, SecurityRules } from '../types';
 // Defaults to the same host path under /api for unified production structures.
 export const API_BASE_URL = (import.meta as any).env?.VITE_API_BASE_URL || '/api';
 
+function getAuthHeaders(): Record<string, string> {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  const token = sessionStorage.getItem('authToken');
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+  return headers;
+}
+
 /**
  * TypeScript Schemas for Request & Response DTOs
  */
@@ -60,7 +69,7 @@ export const threatApi = {
 
     try {
       const response = await fetch(url.toString(), {
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
       });
       if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
       return await response.json();
@@ -78,7 +87,7 @@ export const threatApi = {
     try {
       const response = await fetch(`${API_BASE_URL}/transactions`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify(transaction),
       });
       if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
@@ -97,7 +106,7 @@ export const threatApi = {
     try {
       const response = await fetch(`${API_BASE_URL}/transactions/${txId}/override`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify({ status } as OverrideStatusRequest),
       });
       if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
@@ -115,7 +124,7 @@ export const threatApi = {
   async getSecurityRules(): Promise<SecurityRules> {
     try {
       const response = await fetch(`${API_BASE_URL}/rules`, {
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
       });
       if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
       return await response.json();
@@ -133,7 +142,7 @@ export const threatApi = {
     try {
       const response = await fetch(`${API_BASE_URL}/rules`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify(rules),
       });
       if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
@@ -151,24 +160,41 @@ export const threatApi = {
   async getClusterNodes(): Promise<NodeMetricsResponse[]> {
     try {
       const response = await fetch(`${API_BASE_URL}/nodes`, {
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
       });
       if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
       return await response.json();
     } catch (e) {
-      console.warn('API getClusterNodes failed.', e);
+      console.warn('API updateSecurityRules failed.', e);
       throw e;
     }
   },
 
   /**
-   * 7. GET /api/historical-trends
+   * 7. GET /api/transactions/latest
+   * Gets one new randomly-generated transaction (polled to simulate real-time stream).
+   */
+  async getLatestTransaction(): Promise<Transaction> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/transactions/latest`, {
+        headers: getAuthHeaders(),
+      });
+      if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+      return await response.json();
+    } catch (e) {
+      console.warn('API getLatestTransaction failed.', e);
+      throw e;
+    }
+  },
+
+  /**
+   * 8. GET /api/historical-trends
    * Collects Recharts statistical metrics over recent time intervals.
    */
   async getHistoricalTrends(): Promise<HistoricalTrendPoint[]> {
     try {
       const response = await fetch(`${API_BASE_URL}/historical-trends`, {
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
       });
       if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
       return await response.json();
