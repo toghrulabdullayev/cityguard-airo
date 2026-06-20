@@ -1,0 +1,215 @@
+@import "tailwindcss";
+
+@theme {
+  --color-neutral-primary-soft: #0A0A10;
+  --color-neutral-primary: #04040A;
+  --color-neutral-primary-medium: #0E0E16;
+  --color-neutral-primary-strong: #181822;
+  --color-neutral-secondary-soft: #08080E;
+  --color-neutral-secondary: #06060C;
+  --color-neutral-secondary-medium: #0C0C14;
+  --color-neutral-secondary-strong: #14141E;
+  --color-neutral-tertiary-soft: #0A0A12;
+  --color-neutral-tertiary: #10101A;
+  --color-neutral-tertiary-medium: #181822;
+  --color-neutral-quaternary: #1E1E2C;
+  --color-quaternary-medium: #282840;
+  --color-gray: #343450;
+
+  --color-brand-softer: #061518;
+  --color-brand-soft: #0A2832;
+  --color-brand: #54EAFD;
+  --color-brand-medium: #0D3540;
+  --color-brand-strong: #42D0E2;
+
+  --color-success-soft: #001A10;
+  --color-success: #00E676;
+  --color-success-medium: #002E1B;
+  --color-success-strong: #00B854;
+
+  --color-danger-soft: #1F000C;
+  --color-danger: #FF1744;
+  --color-danger-medium: #3A0015;
+  --color-danger-strong: #D40030;
+
+  --color-warning-soft: #1F1400;
+  --color-warning: #FFEA00;
+  --color-warning-medium: #2E1C00;
+  --color-warning-strong: #E6C200;
+
+  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+  --font-audiowide: "Audiowide", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+  
+  --shadow-2xs: 0 1px rgba(84, 234, 253, 0.06);
+  --shadow-xs: 0 1px 3px 0 rgba(84, 234, 253, 0.08);
+  --shadow-sm: 0 1px 4px 0 rgba(84, 234, 253, 0.12), 0 1px 2px -1px rgba(0, 0, 0, 0.25);
+  --shadow-md: 0 4px 8px -1px rgba(84, 234, 253, 0.14), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 10px 20px -3px rgba(84, 234, 253, 0.15), 0 4px 6px -4px rgba(0, 0, 0, 0.35);
+  --shadow-xl: 0 20px 30px -5px rgba(84, 234, 253, 0.14), 0 8px 10px -6px rgba(0, 0, 0, 0.35);
+  --shadow-2xl: 0 25px 50px -12px rgba(84, 234, 253, 0.22);
+  
+  --color-heading: #EEEEF6;
+  --color-body: #7E7F94;
+  --color-body-subtle: #5C5D72;
+  --color-white: #FFFFFF;
+  --color-black: #0A0A10;
+
+  --color-fg-brand-subtle: #0E3D4E;
+  --color-fg-brand: #54EAFD;
+  --color-fg-brand-strong: #8AF2FF;
+
+  --color-fg-success: #00C060;
+  --color-fg-success-strong: #39FF8E;
+  --color-fg-danger: #FF4D6E;
+  --color-fg-danger-strong: #FF6B88;
+  --color-fg-warning: #FFEA00;
+  --color-fg-disabled: #3A3A50;
+
+  --color-border-dark: #3A3A52;
+  --color-border-buffer: #04040A;
+  --color-border-default: #14141E;
+  --color-border-default-medium: #1E1E2C;
+  --color-border-default-strong: #2A2A3E;
+  --color-border-brand-subtle: #0E3D4E;
+  --color-border-brand: #7CF0FF;
+  --color-border-success: #00C060;
+  --color-border-danger: #FF003C;
+  --color-border-warning: #FFEA00;
+}
+
+/* Custom Base Layer overrides */
+@layer base {
+  body {
+    background-color: var(--color-neutral-primary);
+    color: var(--color-body);
+    font-family: var(--font-sans);
+  }
+
+  /* Global Scrollbars */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #04040a;
+    border-left: 1px solid var(--color-border-default);
+    border-top: 1px solid var(--color-border-default);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-brand-medium);
+    border-radius: 0px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-brand);
+  }
+
+  /* Scrollbars inside dashboard list-view scrollable boxes */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: #08080c;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: var(--color-brand-medium);
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: var(--color-brand);
+  }
+
+  /* For Firefox */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-brand-medium) #04040a;
+  }
+}
+
+/* Cyberpunk Utility classes */
+.clip-btn {
+  clip-path: polygon(8px 0%, 100% 0%, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0% 100%, 0% 8px);
+}
+
+.clip-alert {
+  clip-path: polygon(10px 0%, 100% 0%, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0% 100%, 0% 10px);
+}
+
+.clip-card {
+  clip-path: polygon(14px 0%, 100% 0%, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0% 100%, 0% 14px);
+}
+
+.clip-modal {
+  clip-path: polygon(16px 0%, 100% 0%, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0% 100%, 0% 16px);
+}
+
+/* scanline overlay */
+.scanlines {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    rgba(18, 16, 16, 0) 50%, 
+    rgba(0, 0, 0, 0.25) 50%
+  );
+  background-size: 100% 4px;
+  z-index: 999;
+  pointer-events: none;
+  opacity: 0.15;
+}
+
+/* cyberpunk ambient static noise */
+.cyber-grid {
+  background-image: 
+    linear-gradient(rgba(84, 234, 253, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(84, 234, 253, 0.03) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+/* Button neon glint effect */
+.glint-btn {
+  box-shadow: 
+    0 1px 3px 0 rgba(84, 234, 253, 0.08), 
+    inset rgba(84, 234, 253, 0.12) 0 1px 0px 0px, 
+    rgba(84, 234, 253, 0.08) 0 0 14px -2px;
+}
+
+.glint-btn:hover {
+  box-shadow: 
+    0 2px 5px 0 rgba(84, 234, 253, 0.18), 
+    inset rgba(84, 234, 253, 0.25) 0 1px 0px 0px, 
+    rgba(84, 234, 253, 0.20) 0 0 20px 2px;
+}
+
+@keyframes glitch {
+  0% {
+    text-shadow: 1px 0.5px 0 rgba(255,0,80,0.5), -1px -0.5px 0 rgba(0,240,255,0.5);
+  }
+  50% {
+    text-shadow: -1px 1px 0 rgba(255,0,80,0.5), 1.5px -0.5px 0 rgba(0,240,255,0.5);
+  }
+  100% {
+    text-shadow: 1px -0.5px 0 rgba(255,0,80,0.5), -1px 0.5px 0 rgba(0,240,255,0.5);
+  }
+}
+
+.animate-glitch {
+  animation: glitch 1.5s infinite steps(2);
+}
+
+@keyframes pulse-subtle {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+.pulse-led {
+  animation: pulse-subtle 2s infinite ease-in-out;
+}

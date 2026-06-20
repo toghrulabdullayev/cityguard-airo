@@ -1,0 +1,8 @@
+{
+  "name": "CityGuard AI Platform",
+  "description": "An AI-powered real-time cyber threat prevention and abnormal behavior detection terminal with interactive scoring, live alert feeds, and explainable AI insights.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
