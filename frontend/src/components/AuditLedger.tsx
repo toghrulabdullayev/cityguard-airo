@@ -7,8 +7,8 @@ interface AuditLedgerProps {
   transactions: Transaction[];
   searchQuery: string;
   setSearchQuery: (q: string) => void;
-  statusFilter: 'All' | 'Verified' | 'Flagged' | 'Under Review';
-  setStatusFilter: (f: 'All' | 'Verified' | 'Flagged' | 'Under Review') => void;
+  statusFilter: 'All' | 'Verified' | 'Flagged' | 'Under Review' | 'Attacked';
+  setStatusFilter: (f: 'All' | 'Verified' | 'Flagged' | 'Under Review' | 'Attacked') => void;
   rules: SecurityRules;
   handleExportJSONLog: () => void;
 }
@@ -62,7 +62,7 @@ export default function AuditLedger({
         </div>
 
         <div className="flex items-center gap-1.5 bg-neutral-secondary-medium p-1 border border-default-medium w-full md:w-auto overflow-x-auto select-none">
-          {(['All', 'Verified', 'Under Review', 'Flagged'] as const).map(tab => (
+          {(['All', 'Verified', 'Under Review', 'Flagged', 'Attacked'] as const).map(tab => (
             <button
               key={tab}
               onClick={() => setStatusFilter(tab)}
@@ -106,7 +106,10 @@ export default function AuditLedger({
                   let scoreColorClass = 'text-[#00E676]';
                   let badgeClass = 'bg-success-soft text-[#00E676] border-success-medium';
                   
-                  if (tx.riskScore >= rules.autoBlockThreshold) {
+                  if (tx.status === 'Attacked') {
+                    scoreColorClass = 'text-[#FF0055] font-bold animate-pulse';
+                    badgeClass = 'bg-[#2A0010] text-[#FF0055] border-[#FF0055]';
+                  } else if (tx.riskScore >= rules.autoBlockThreshold) {
                     scoreColorClass = 'text-danger font-bold';
                     badgeClass = 'bg-danger-soft text-danger border-danger-medium';
                   } else if (tx.riskScore >= rules.mfaThreshold) {
@@ -131,7 +134,7 @@ export default function AuditLedger({
                       </td>
                       <td className="p-4">
                         <span className={`inline-block px-2 py-0.5 text-[9px] uppercase border font-bold ${badgeClass}`}>
-                          {tx.status === 'Under Review' ? 'MFA Challenge' : tx.status === 'Verified' ? 'CLEAR' : 'HALTED'}
+                          {tx.status === 'Under Review' ? 'MFA Challenge' : tx.status === 'Verified' ? 'CLEAR' : tx.status === 'Attacked' ? '⚠ ATTACKED' : 'HALTED'}
                         </span>
                       </td>
                       <td className="p-4 text-body-subtle">{tx.location}</td>
@@ -208,9 +211,12 @@ export default function AuditLedger({
                   <span className="text-[9px] text-body-subtle uppercase">Verdict</span>
                   <span className={`inline-block py-0.5 text-[9px] uppercase font-bold mt-1 ${
                     detailedTx.status === 'Verified' ? 'text-[#00E676]' :
-                    detailedTx.status === 'Under Review' ? 'text-warning font-bold' : 'text-danger font-bold'
+                    detailedTx.status === 'Under Review' ? 'text-warning font-bold' :
+                    detailedTx.status === 'Attacked' ? 'text-[#FF0055] animate-pulse' : 'text-danger font-bold'
                   }`}>
-                    {detailedTx.status === 'Under Review' ? 'MFA REQUIRED' : detailedTx.status === 'Verified' ? 'CLEAR' : 'BLOCKED'}
+                    {detailedTx.status === 'Under Review' ? 'MFA REQUIRED' : 
+                     detailedTx.status === 'Verified' ? 'CLEAR' : 
+                     detailedTx.status === 'Attacked' ? '⚠ ATTACK DETECTED' : 'BLOCKED'}
                   </span>
                 </div>
               </div>

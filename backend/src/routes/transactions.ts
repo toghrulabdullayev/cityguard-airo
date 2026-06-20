@@ -111,7 +111,7 @@ router.post('/:id/override', (req: Request, res: Response) => {
   const { id } = req.params;
   const { status } = req.body;
 
-  if (!['Verified', 'Flagged', 'Under Review'].includes(status)) {
+  if (!['Verified', 'Flagged', 'Under Review', 'Attacked'].includes(status)) {
     res.status(400).json({ error: 'Invalid status value.' });
     return;
   }
@@ -135,6 +135,14 @@ router.post('/:id/override', (req: Request, res: Response) => {
     newScore = 100 * (0.30 * 0.95 + 0.25 * 0.90 + 0.20 * 0.85 + 0.15 * 0.80 + 0.10 * 0.90);
     newScore = Math.round(newScore);
     reasons = ['Administrator Purge: Payment terminal blacklisted and citizen account flagged for investigation.'];
+  } else if (status === 'Attacked') {
+    newFactors = JSON.stringify({ failedAttempts: 1.0, amountAnomaly: 1.0, geoAnomaly: 1.0, timeAnomaly: 1.0, deviceReputation: 1.0 });
+    newScore = 100;
+    reasons = [
+      '🚨 CYBER ATTACK DETECTED: Central Breach — Terminal firmware compromised by unauthorized entity.',
+      'Attack Pattern: Payment data exfiltration via compromised API gateway — all risk factors maxed.',
+      'Immediate action required: Isolate affected terminal segment and rotate all cryptographic keys.',
+    ];
   }
 
   db.prepare('UPDATE transactions SET status = ?, riskScore = ?, explainReasons = ?, riskFactors = ? WHERE id = ?')

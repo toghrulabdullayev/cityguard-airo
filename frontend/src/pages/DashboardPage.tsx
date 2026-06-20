@@ -4,9 +4,7 @@ import { Transaction, SecurityRules } from '../types';
 import { 
   getInitialTransactions, 
   generateMockTransaction, 
-  getHistoricalTrendData,
-  generateRiskFactors,
-  computeRiskScore
+  getHistoricalTrendData
 } from '../utils/mockData';
 import { threatApi } from '../api/threatApi';
 import Sidebar, { DashboardTab } from '../components/Sidebar';
@@ -127,7 +125,7 @@ export default function DashboardPage({ userEmail, onLogout }: DashboardPageProp
     activeAlerts: 14
   });
 
-  const [statusFilter, setStatusFilter] = useState<'All' | 'Verified' | 'Flagged' | 'Under Review'>('All');
+  const [statusFilter, setStatusFilter] = useState<'All' | 'Verified' | 'Flagged' | 'Under Review' | 'Attacked'>('All');
   const [searchQuery, setSearchQuery] = useState('');
 
   const [trendData] = useState(() => getHistoricalTrendData());
@@ -224,6 +222,14 @@ export default function DashboardPage({ userEmail, onLogout }: DashboardPageProp
           updatedFactors = { failedAttempts: 0.95, amountAnomaly: 0.90, geoAnomaly: 0.85, timeAnomaly: 0.80, deviceReputation: 0.90 };
           updatedScore = Math.round(100 * (0.30 * 0.95 + 0.25 * 0.90 + 0.20 * 0.85 + 0.15 * 0.80 + 0.10 * 0.90));
           reasons = ['Administrator Purge: Payment terminal blacklisted and citizen account flagged for investigation.'];
+        } else if (newStatus === 'Attacked') {
+          updatedFactors = { failedAttempts: 1.0, amountAnomaly: 1.0, geoAnomaly: 1.0, timeAnomaly: 1.0, deviceReputation: 1.0 };
+          updatedScore = 100;
+          reasons = [
+            '🚨 CYBER ATTACK DETECTED: Central Breach — Terminal firmware compromised by unauthorized entity.',
+            'Attack Pattern: Payment data exfiltration via compromised API gateway — all risk factors maxed.',
+            'Immediate action required: Isolate affected terminal segment and rotate all cryptographic keys.',
+          ];
         }
 
         return {

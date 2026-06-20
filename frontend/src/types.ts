@@ -15,7 +15,7 @@ export interface Transaction {
   id: string;
   amount: number;
   merchant: string;
-  status: 'Verified' | 'Flagged' | 'Under Review';
+  status: 'Verified' | 'Flagged' | 'Under Review' | 'Attacked';
   riskScore: number; // 0 to 100
   timestamp: string; // Formatted time e.g., "08:14:22"
   location: string;

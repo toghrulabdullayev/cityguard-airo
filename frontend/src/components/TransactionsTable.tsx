@@ -16,8 +16,8 @@ interface TransactionsTableProps {
   setSelectedTxId: (id: string | null) => void;
   searchQuery: string;
   setSearchQuery: (q: string) => void;
-  statusFilter: 'All' | 'Verified' | 'Flagged' | 'Under Review';
-  setStatusFilter: (f: 'All' | 'Verified' | 'Flagged' | 'Under Review') => void;
+  statusFilter: 'All' | 'Verified' | 'Flagged' | 'Under Review' | 'Attacked';
+  setStatusFilter: (f: 'All' | 'Verified' | 'Flagged' | 'Under Review' | 'Attacked') => void;
   rules: SecurityRules;
   activeTx: Transaction | null;
   handleOverrideStatus: (txId: string, newStatus: Transaction['status']) => void;
@@ -72,7 +72,7 @@ export default function TransactionsTable({
               </div>
 
               <div className="flex items-center gap-1 bg-neutral-secondary-medium p-1 border border-default-medium select-none">
-                {(['All', 'Verified', 'Under Review', 'Flagged'] as const).map(tab => (
+                {(['All', 'Verified', 'Under Review', 'Flagged', 'Attacked'] as const).map(tab => (
                   <button
                     key={tab}
                     onClick={() => setStatusFilter(tab)}
@@ -116,8 +116,13 @@ export default function TransactionsTable({
                     
                     let scoreColorClass = 'text-[#00E676]';
                     let badgeClass = 'bg-success-soft text-[#00E676] border-success-medium';
+                    let rowGlow = '';
                     
-                    if (tx.riskScore >= rules.autoBlockThreshold) {
+                    if (tx.status === 'Attacked') {
+                      scoreColorClass = 'text-[#FF0055] font-bold animate-pulse';
+                      badgeClass = 'bg-[#2A0010] text-[#FF0055] border-[#FF0055]';
+                      rowGlow = 'shadow-[inset_0_0_20px_rgba(255,0,85,0.15)]';
+                    } else if (tx.riskScore >= rules.autoBlockThreshold) {
                       scoreColorClass = 'text-danger font-bold';
                       badgeClass = 'bg-danger-soft text-danger border-danger-medium';
                     } else if (tx.riskScore >= rules.mfaThreshold) {
@@ -131,7 +136,7 @@ export default function TransactionsTable({
                         onClick={() => setSelectedTxId(tx.id)}
                         className={`cursor-pointer transition-colors text-[11px] hover:bg-neutral-secondary-soft/50 ${
                           isSelected ? 'bg-neutral-secondary-medium border-l-2 border-brand font-medium' : ''
-                        }`}
+                        } ${rowGlow}`}
                       >
                         <td className="p-3 font-semibold text-heading">{tx.id}</td>
                         <td className="p-3 text-body-subtle">{tx.timestamp}</td>
@@ -188,6 +193,19 @@ export default function TransactionsTable({
 
           {activeTx ? (
             <div className="space-y-5 font-mono text-xs">
+              {activeTx.status === 'Attacked' && (
+                <div className="p-3 bg-[#2A0010] border-2 border-[#FF0055] animate-pulse shadow-[0_0_20px_rgba(255,0,85,0.3)]">
+                  <div className="flex items-center gap-2 mb-1">
+                    <ShieldAlert className="w-5 h-5 text-[#FF0055]" />
+                    <span className="text-[#FF0055] font-audiowide text-sm uppercase tracking-wider font-bold">
+                      ⚠ CYBER ATTACK IN PROGRESS
+                    </span>
+                  </div>
+                  <p className="text-[10px] text-[#FF5588] font-mono mt-1">
+                    Critical breach detected on this payment terminal. All risk factors at maximum. Immediate isolation recommended.
+                  </p>
+                </div>
+              )}
               <div className="p-3.5 bg-neutral-secondary-medium/90 border border-default-medium">
                 <span className="text-[9px] text-[#54EAFD] uppercase block tracking-wider font-bold mb-1">
                   ADMIN OVERVIEW
@@ -347,7 +365,7 @@ export default function TransactionsTable({
           )}
         </div>
 
-        <div className="border-t border-default pt-5 mt-6 space-y-3.5">
+          <div className="border-t border-default pt-5 mt-6 space-y-3.5">
           <span className="text-[9px] text-body-subtle font-mono uppercase block tracking-wider leading-none">
             ADMIN COMMAND BRIDGE
           </span>
@@ -371,6 +389,15 @@ export default function TransactionsTable({
               Block / Flag
             </button>
           </div>
+
+          <button
+            disabled={!activeTx || activeTx.status === 'Attacked'}
+            onClick={() => activeTx && handleOverrideStatus(activeTx.id, 'Attacked')}
+            className="w-full px-3.5 py-3 border border-[#FF0055] bg-[#2A0010] hover:bg-[#400020] text-[#FF0055] tracking-wider uppercase clip-btn inline-flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed text-xs font-audiowide animate-pulse"
+          >
+            <ShieldAlert className="w-4 h-4" />
+            ⚠ Simulate Attack
+          </button>
 
           <div className="p-2.5 bg-neutral-secondary-soft text-[10px] text-body-subtle font-mono leading-relaxed border-l-2 border-danger-strong select-none">
             WARNING: Override actions publish audit signatures permanently to the city ledger vault.
