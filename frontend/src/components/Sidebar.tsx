@@ -1,8 +1,3 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
-
 import React from 'react';
 import { 
   Activity, 
@@ -13,9 +8,6 @@ import {
   ChevronRight, 
   ShieldAlert,
   Server,
-  Terminal,
-  Settings,
-  HelpCircle
 } from 'lucide-react';
 
 export type DashboardTab = 'telemetry' | 'rules' | 'nodes' | 'audit';
@@ -39,26 +31,26 @@ export default function Sidebar({
   const menuItems = [
     {
       id: 'telemetry' as DashboardTab,
-      label: 'Telemetry Matrix',
-      desc: 'Real-time transaction flow',
+      label: 'Payment Telemetry',
+      desc: 'Real-time payment flow',
       icon: Activity,
     },
     {
       id: 'rules' as DashboardTab,
-      label: 'Policy Sliders',
+      label: 'Security Policies',
       desc: 'MFA & block thresholds',
       icon: Sliders,
     },
     {
       id: 'nodes' as DashboardTab,
-      label: 'Security Clusters',
-      desc: 'Geo-node routing status',
+      label: 'City Clusters',
+      desc: 'Municipal node status',
       icon: Globe,
     },
     {
       id: 'audit' as DashboardTab,
-      label: 'Immutable Ledger',
-      desc: 'Audited record archives',
+      label: 'Audit Ledger',
+      desc: 'Immutable payment logs',
       icon: Database,
     }
   ];
@@ -69,7 +61,6 @@ export default function Sidebar({
         isCollapsed ? 'w-16' : 'w-64'
       }`}
     >
-      {/* Collapse Action Key */}
       <button 
         onClick={() => setIsCollapsed(!isCollapsed)}
         className="absolute top-4 -right-3 w-6 h-6 rounded-full border border-neutral-tertiary-medium bg-neutral-primary hover:bg-neutral-secondary-soft flex items-center justify-center text-brand cursor-pointer shadow-md shadow-black/80 z-30 group transition-all"
@@ -82,10 +73,7 @@ export default function Sidebar({
         )}
       </button>
 
-      {/* Primary Sidebar Content Navigation */}
       <div className="flex-1 py-6 flex flex-col justify-between overflow-y-auto overflow-x-hidden pt-8">
-        
-        {/* Navigation Deck */}
         <div className="space-y-6">
           {!isCollapsed && (
             <div className="px-5 mb-4">
@@ -126,7 +114,6 @@ export default function Sidebar({
                     </div>
                   )}
 
-                  {/* Corner light dot if active */}
                   {isActive && !isCollapsed && (
                     <span className="absolute right-3.5 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-brand animate-pulse"></span>
                   )}
@@ -136,7 +123,6 @@ export default function Sidebar({
           </nav>
         </div>
 
-        {/* Threat Level Advisory Sign */}
         <div className="px-3 select-none">
           {isCollapsed ? (
             <div className="flex justify-center p-2 text-danger-strong" title="System Security Advisory: Elevated Risk">
@@ -147,22 +133,21 @@ export default function Sidebar({
               <div className="flex items-center gap-2">
                 <ShieldAlert className="w-4 h-4 text-danger animate-pulse" />
                 <span className="text-[10px] font-audiowide text-danger uppercase tracking-wider">
-                  Postural Warning
+                  Threat Advisory
                 </span>
               </div>
               <p className="text-[9px] font-mono text-body-subtle leading-relaxed">
-                Security grid cluster is evaluating sequence anomalies at +44% volume over 30d baseline.
+                Smart city payment grid evaluating anomaly sequences at +44% volume over 30-day baseline.
               </p>
             </div>
           )}
         </div>
       </div>
 
-      {/* Cybernetic lower user telemetry details */}
       <div className="border-t border-neutral-tertiary-medium p-4.5 bg-neutral-primary/50 select-none">
         {isCollapsed ? (
           <div className="flex justify-center">
-            <Server className="w-5 h-5 text-brand/60" title={`Secure Server Connected - Role: Chief Analyst`} />
+            <Server className="w-5 h-5 text-brand/60" title={`Secure Server - Role: City Administrator`} />
           </div>
         ) : (
           <div className="space-y-1.5">
@@ -171,10 +156,10 @@ export default function Sidebar({
               <span className="text-[#00E676] font-bold">STABLE</span>
             </div>
             <div className="text-[10px] font-mono text-heading truncate uppercase tracking-tight">
-              {userEmail.split('@')[0]}@shield
+              {userEmail.split('@')[0]}@cityguard
             </div>
             <div className="text-[8px] font-mono text-body-subtle/80 uppercase">
-              Role: Chief Inspector
+              Role: City Administrator
             </div>
           </div>
         )}

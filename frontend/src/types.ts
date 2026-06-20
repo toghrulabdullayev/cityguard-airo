@@ -3,6 +3,14 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+export interface RiskFactors {
+  failedAttempts: number;
+  amountAnomaly: number;
+  geoAnomaly: number;
+  timeAnomaly: number;
+  deviceReputation: number;
+}
+
 export interface Transaction {
   id: string;
   amount: number;
@@ -14,6 +22,7 @@ export interface Transaction {
   cardType: string;
   deviceType: string;
   explainReasons?: string[];
+  riskFactors?: RiskFactors;
   customerEmail: string;
   merchantCategory: string;
 }

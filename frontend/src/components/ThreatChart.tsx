@@ -1,8 +1,3 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
-
 import React from 'react';
 import { 
   AreaChart, 
@@ -31,19 +26,19 @@ export default function ThreatChart({ trendData }: ThreatChartProps) {
     <div className="bg-neutral-primary-soft border border-default p-5.5 clip-card relative">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-default pb-3.5 mb-5 select-none">
         <div>
-          <span className="font-mono text-[9px] tracking-[3px] text-brand uppercase block">Security Telemetry Analyzer</span>
+          <span className="font-mono text-[9px] tracking-[3px] text-brand uppercase block">Smart City Telemetry</span>
           <h3 className="font-audiowide uppercase text-sm tracking-wider text-heading font-bold mt-0.5">
-            Anomalic Surge vs Processed Packets
+            Anomalies vs Processed Payments
           </h3>
         </div>
         <div className="flex items-center gap-4 text-[10px] font-mono select-none">
           <div className="flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 bg-brand/30 border border-brand block"></span>
-            <span className="text-body">Processed Envelopes</span>
+            <span className="text-body">Total Payments</span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 bg-danger/30 border border-danger block"></span>
-            <span className="text-body">Flagged Attacks</span>
+            <span className="text-body">Flagged Threats</span>
           </div>
         </div>
       </div>
@@ -92,7 +87,7 @@ export default function ThreatChart({ trendData }: ThreatChartProps) {
               fillOpacity={1} 
               fill="url(#colorProcessed)" 
               strokeWidth={1.5}
-              name="Processed (Total)"
+              name="Total Payments"
             />
             <Area 
               type="monotone" 
@@ -101,7 +96,7 @@ export default function ThreatChart({ trendData }: ThreatChartProps) {
               fillOpacity={1} 
               fill="url(#colorFlagged)" 
               strokeWidth={1.5}
-              name="Anomalies (Flagged)"
+              name="Flagged Threats"
             />
           </AreaChart>
         </ResponsiveContainer>

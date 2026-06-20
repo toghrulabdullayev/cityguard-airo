@@ -1,8 +1,3 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
-
 import React from 'react';
 import { TrendingUp, Database, ShieldAlert, Activity } from 'lucide-react';
 
@@ -21,7 +16,6 @@ interface MetricsCardsProps {
 export default function MetricsCards({ currentMetrics, cumulativeStats }: MetricsCardsProps) {
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-      {/* Stat: Fraud Detection Rate */}
       <div className="bg-neutral-primary-soft border border-default p-4.5 clip-card shadow-xs relative overflow-hidden">
         <div className="flex items-center justify-between mb-2">
           <span className="text-[10px] font-mono uppercase tracking-wider text-body-subtle">Detection Rate</span>
@@ -32,14 +26,13 @@ export default function MetricsCards({ currentMetrics, cumulativeStats }: Metric
         </div>
         <p className="text-[10px] font-mono text-brand/80 mt-1 flex items-center gap-1 leading-none uppercase">
           <span className="w-1.5 h-1.5 rounded-full bg-brand inline-block pulse-led"></span>
-          Sovereign Precision Model
+          AI Precision Model
         </p>
       </div>
 
-      {/* Stat: Total Packets Processed */}
       <div className="bg-neutral-primary-soft border border-default p-4.5 clip-card shadow-xs relative overflow-hidden">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-[10px] font-mono uppercase tracking-wider text-body-subtle">Telemetry Packets</span>
+          <span className="text-[10px] font-mono uppercase tracking-wider text-body-subtle">Payments Processed</span>
           <Database className="w-4 h-4 text-brand" />
         </div>
         <div className="font-audiowide text-2xl font-bold text-heading">
@@ -47,11 +40,10 @@ export default function MetricsCards({ currentMetrics, cumulativeStats }: Metric
         </div>
         <p className="text-[10px] font-mono text-body-subtle mt-1 flex items-center gap-1 leading-none uppercase">
           <span className="w-1.5 h-1.5 rounded-full bg-[#00E676] inline-block"></span>
-          In-memory sync live
+          Live sync active
         </p>
       </div>
 
-      {/* Stat: Active Alerts */}
       <div className="bg-neutral-primary-soft border border-default p-4.5 clip-card shadow-xs relative overflow-hidden">
         <div className="flex items-center justify-between mb-2">
           <span className="text-[10px] font-mono uppercase tracking-wider text-body-subtle">Active Alerts</span>
@@ -62,11 +54,10 @@ export default function MetricsCards({ currentMetrics, cumulativeStats }: Metric
         </div>
         <p className="text-[10px] font-mono text-danger mt-1 flex items-center gap-1 leading-none uppercase animate-pulse">
           <span className="w-1.5 h-1.5 rounded-full bg-danger inline-block"></span>
-          Require analyst check
+          Require admin review
         </p>
       </div>
 
-      {/* Stat: Transactions per second */}
       <div className="bg-neutral-primary-soft border border-default p-4.5 clip-card shadow-xs relative overflow-hidden">
         <div className="flex items-center justify-between mb-2">
           <span className="text-[10px] font-mono uppercase tracking-wider text-body-subtle">Evaluations / Sec</span>
@@ -77,7 +68,7 @@ export default function MetricsCards({ currentMetrics, cumulativeStats }: Metric
         </div>
         <p className="text-[10px] font-mono text-body-subtle mt-1 flex items-center gap-1 leading-none uppercase">
           <span className="w-1.5 h-1.5 rounded-full bg-[#00E676] inline-block"></span>
-          Nano-latency latency: &lt;42ms
+          Sub-42ms latency
         </p>
       </div>
     </div>

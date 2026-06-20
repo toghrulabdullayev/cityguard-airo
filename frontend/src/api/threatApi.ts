@@ -27,7 +27,7 @@ export interface FetchTransactionsParams {
 }
 
 export interface NodeMetricsResponse {
-  nodeId: 'sf' | 'london' | 'tokyo' | 'amsterdam';
+  nodeId: 'baku-central' | 'sumqayit' | 'ganja' | 'khazar';
   name: string;
   region: string;
   ip: string;

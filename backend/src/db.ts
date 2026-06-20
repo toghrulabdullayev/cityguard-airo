@@ -51,7 +51,8 @@ function initSchema() {
       cardType TEXT NOT NULL,
       deviceType TEXT NOT NULL,
       explainReasons TEXT DEFAULT '[]',
-      customerEmail TEXT NOT NULL
+      customerEmail TEXT NOT NULL,
+      riskFactors TEXT DEFAULT '{"failedAttempts":0,"amountAnomaly":0,"geoAnomaly":0,"timeAnomaly":0,"deviceReputation":0}'
     );
 
     CREATE TABLE IF NOT EXISTS security_rules (
@@ -63,6 +64,13 @@ function initSchema() {
       dynamicMfaEnabled INTEGER NOT NULL DEFAULT 1
     );
   `);
+
+  // Migration: add riskFactors column if missing (for existing databases)
+  try {
+    db.exec('ALTER TABLE transactions ADD COLUMN riskFactors TEXT DEFAULT \'{"failedAttempts":0,"amountAnomaly":0,"geoAnomaly":0,"timeAnomaly":0,"deviceReputation":0}\'');
+  } catch (e) {
+    // Column already exists — safe to ignore
+  }
 }
 
 function seedData() {
@@ -87,15 +95,16 @@ function resetTransactions() {
   db.prepare('DELETE FROM transactions').run();
 
   const rules = getRules();
-  const insert = db.prepare(`INSERT INTO transactions (id, amount, merchant, merchantCategory, status, riskScore, timestamp, location, cardType, deviceType, explainReasons, customerEmail)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`);
+  const insert = db.prepare(`INSERT INTO transactions (id, amount, merchant, merchantCategory, status, riskScore, timestamp, location, cardType, deviceType, explainReasons, customerEmail, riskFactors)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`);
 
   const seedTx = db.transaction((count: number) => {
     for (let i = 0; i < count; i++) {
       const tx = generateTransactionData(rules.mfaThreshold, rules.autoBlockThreshold);
       insert.run(
         tx.id, tx.amount, tx.merchant, tx.merchantCategory, tx.status, tx.riskScore,
-        tx.timestamp, tx.location, tx.cardType, tx.deviceType, tx.explainReasons, tx.customerEmail
+        tx.timestamp, tx.location, tx.cardType, tx.deviceType, tx.explainReasons, tx.customerEmail,
+        tx.riskFactors
       );
     }
   });

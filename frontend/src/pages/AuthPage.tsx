@@ -69,10 +69,10 @@ export default function AuthPage({ onLoginSuccess, onBackToLanding }: AuthPagePr
             <Shield className="w-6 h-6 text-brand" />
           </div>
           <h2 className="font-audiowide font-bold text-2xl tracking-wider text-heading uppercase">
-            Clearance Lockbox
+            City Administrator
           </h2>
           <p className="text-xs font-mono uppercase tracking-[2px] text-brand/70 mt-1">
-            Secure Terminal System Access
+            Smart City Security Terminal
           </p>
         </div>
 

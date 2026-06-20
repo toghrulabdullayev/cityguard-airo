@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { getDb } from '../db';
 import { authMiddleware } from '../middleware/auth';
-import { generateTransactionData, getCurrentTimeString } from '../generators';
+import { generateTransactionData, getCurrentTimeString, generateRiskFactors, computeRiskScore } from '../generators';
 
 const router = Router();
 
@@ -44,6 +44,7 @@ router.get('/', (req: Request, res: Response) => {
   const parsed = transactions.map((t: any) => ({
     ...t,
     explainReasons: JSON.parse(t.explainReasons || '[]'),
+    riskFactors: JSON.parse(t.riskFactors || '{"failedAttempts":0,"amountAnomaly":0,"geoAnomaly":0,"timeAnomaly":0,"deviceReputation":0}'),
   }));
 
   res.json(parsed);
@@ -55,15 +56,17 @@ router.get('/latest', (_req: Request, res: Response) => {
   const rules = getRules();
   const tx = generateTransactionData(rules.mfaThreshold, rules.autoBlockThreshold);
 
-  db.prepare(`INSERT INTO transactions (id, amount, merchant, merchantCategory, status, riskScore, timestamp, location, cardType, deviceType, explainReasons, customerEmail)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(
+  db.prepare(`INSERT INTO transactions (id, amount, merchant, merchantCategory, status, riskScore, timestamp, location, cardType, deviceType, explainReasons, customerEmail, riskFactors)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(
     tx.id, tx.amount, tx.merchant, tx.merchantCategory, tx.status, tx.riskScore,
-    tx.timestamp, tx.location, tx.cardType, tx.deviceType, tx.explainReasons, tx.customerEmail
+    tx.timestamp, tx.location, tx.cardType, tx.deviceType, tx.explainReasons, tx.customerEmail,
+    tx.riskFactors
   );
 
   res.json({
     ...tx,
     explainReasons: JSON.parse(tx.explainReasons),
+    riskFactors: JSON.parse(tx.riskFactors),
   });
 });
 
@@ -73,6 +76,8 @@ router.post('/', (req: Request, res: Response) => {
   const { amount, merchant, merchantCategory, status, riskScore, location, cardType, deviceType, customerEmail } = req.body;
   const rules = getRules();
   const generated = generateTransactionData(rules.mfaThreshold, rules.autoBlockThreshold);
+  const factors = generateRiskFactors();
+  const computed = computeRiskScore(factors);
 
   const tx = {
     id: `TX-${Math.floor(100000 + Math.random() * 900000)}`,
@@ -80,22 +85,24 @@ router.post('/', (req: Request, res: Response) => {
     merchant: merchant || generated.merchant,
     merchantCategory: merchantCategory || generated.merchantCategory,
     status: status || 'Verified',
-    riskScore: riskScore ?? Math.floor(Math.random() * 30),
+    riskScore: riskScore ?? computed.score,
     timestamp: getCurrentTimeString(),
     location: location || generated.location,
     cardType: cardType || generated.cardType,
     deviceType: deviceType || generated.deviceType,
-    explainReasons: '[]',
+    explainReasons: JSON.stringify(computed.reasons),
+    riskFactors: JSON.stringify(factors),
     customerEmail: customerEmail || generated.customerEmail,
   };
 
-  db.prepare(`INSERT INTO transactions (id, amount, merchant, merchantCategory, status, riskScore, timestamp, location, cardType, deviceType, explainReasons, customerEmail)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(
+  db.prepare(`INSERT INTO transactions (id, amount, merchant, merchantCategory, status, riskScore, timestamp, location, cardType, deviceType, explainReasons, customerEmail, riskFactors)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(
     tx.id, tx.amount, tx.merchant, tx.merchantCategory, tx.status, tx.riskScore,
-    tx.timestamp, tx.location, tx.cardType, tx.deviceType, tx.explainReasons, tx.customerEmail
+    tx.timestamp, tx.location, tx.cardType, tx.deviceType, tx.explainReasons, tx.customerEmail,
+    tx.riskFactors
   );
 
-  res.status(201).json({ ...tx, explainReasons: [] });
+  res.status(201).json({ ...tx, explainReasons: computed.reasons, riskFactors: factors });
 });
 
 // POST /api/transactions/:id/override - override transaction status
@@ -117,22 +124,27 @@ router.post('/:id/override', (req: Request, res: Response) => {
 
   let newScore = existing.riskScore;
   let reasons: string[] = JSON.parse(existing.explainReasons || '[]');
+  let newFactors: string = existing.riskFactors;
 
   if (status === 'Verified') {
-    newScore = Math.floor(Math.random() * 15);
-    reasons = ['Manual Override: Analyst approved and greenlisted account chip profile.'];
+    newFactors = JSON.stringify({ failedAttempts: 0, amountAnomaly: 0, geoAnomaly: 0, timeAnomaly: 0, deviceReputation: 0 });
+    newScore = 0;
+    reasons = ['Manual Override: Administrator approved and whitelisted citizen payment profile.'];
   } else if (status === 'Flagged') {
-    newScore = Math.floor(90 + Math.random() * 10);
-    reasons = ['Analyst Purge Signal: Triggered explicit blacklisting coordinates.'];
+    newFactors = JSON.stringify({ failedAttempts: 0.95, amountAnomaly: 0.90, geoAnomaly: 0.85, timeAnomaly: 0.80, deviceReputation: 0.90 });
+    newScore = 100 * (0.30 * 0.95 + 0.25 * 0.90 + 0.20 * 0.85 + 0.15 * 0.80 + 0.10 * 0.90);
+    newScore = Math.round(newScore);
+    reasons = ['Administrator Purge: Payment terminal blacklisted and citizen account flagged for investigation.'];
   }
 
-  db.prepare('UPDATE transactions SET status = ?, riskScore = ?, explainReasons = ? WHERE id = ?')
-    .run(status, newScore, JSON.stringify(reasons), id);
+  db.prepare('UPDATE transactions SET status = ?, riskScore = ?, explainReasons = ?, riskFactors = ? WHERE id = ?')
+    .run(status, newScore, JSON.stringify(reasons), newFactors, id);
 
   const updated = db.prepare('SELECT * FROM transactions WHERE id = ?').get(id) as any;
   res.json({
     ...updated,
     explainReasons: JSON.parse(updated.explainReasons),
+    riskFactors: JSON.parse(updated.riskFactors),
   });
 });
 

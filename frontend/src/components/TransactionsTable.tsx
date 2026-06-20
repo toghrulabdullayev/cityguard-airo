@@ -1,8 +1,3 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
-
 import React from 'react';
 import { 
   Terminal, 
@@ -49,7 +44,6 @@ export default function TransactionsTable({
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-      {/* RECENT TRANSACTIONS LEDGER (8 COLS) */}
       <div className="lg:col-span-8 bg-neutral-primary-soft border border-default p-5.5 clip-card flex flex-col justify-between min-h-[500px]">
         <div>
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-default pb-4 mb-4">
@@ -57,29 +51,26 @@ export default function TransactionsTable({
               <Terminal className="w-5 h-5 text-brand" />
               <div>
                 <h3 className="font-audiowide uppercase text-sm text-heading tracking-wider font-bold">
-                  Telemetry Ledger Stream
+                  Payment Telemetry Stream
                 </h3>
                 <p className="text-[10px] font-mono text-body-subtle uppercase mt-0.5">
-                  Updated live // Real-time packet polling active
+                  Live feed // Real-time payment polling active
                 </p>
               </div>
             </div>
 
-            {/* SEARCH & FILTER BAR */}
             <div className="flex flex-wrap items-center gap-3">
-              {/* Search */}
               <div className="relative">
                 <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-body-subtle" />
                 <input 
                   type="text" 
-                  placeholder="Search Node / Merchant..." 
+                  placeholder="Search Terminal / ID..." 
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-8 pr-3 py-1.5 bg-neutral-secondary-medium border border-default-medium text-heading text-[11px] font-mono outline-none focus:border-brand w-44"
                 />
               </div>
 
-              {/* Filter Selector */}
               <div className="flex items-center gap-1 bg-neutral-secondary-medium p-1 border border-default-medium select-none">
                 {(['All', 'Verified', 'Under Review', 'Flagged'] as const).map(tab => (
                   <button
@@ -98,15 +89,14 @@ export default function TransactionsTable({
             </div>
           </div>
 
-          {/* LEDGER TABLE */}
           <div className="overflow-x-auto">
             <table className="w-full text-left font-sans text-xs min-w-[650px]">
               <thead>
                 <tr className="bg-neutral-secondary-soft text-body-subtle uppercase font-mono text-[10px] tracking-wider border-b border-default">
-                  <th className="p-3">Packet ID</th>
+                  <th className="p-3">Payment ID</th>
                   <th className="p-3">Timestamp</th>
-                  <th className="p-3">Merchant Target</th>
-                  <th className="p-3 text-right">Invoice Score</th>
+                  <th className="p-3">Payment Terminal</th>
+                  <th className="p-3 text-right">Risk Score</th>
                   <th className="p-3">Status</th>
                   <th className="p-3">Location</th>
                   <th className="p-3 text-right">Amount</th>
@@ -117,14 +107,13 @@ export default function TransactionsTable({
                   <tr>
                     <td colSpan={7} className="p-12 text-center text-body-subtle">
                       <ShieldAlert className="w-8 h-8 text-body-subtle/40 mx-auto mb-3 animate-pulse" />
-                      No transaction packets found matching the query.
+                      No payment records found matching the query.
                     </td>
                   </tr>
                 ) : (
                   filteredTransactions.map((tx) => {
                     const isSelected = tx.id === selectedTxId;
                     
-                    // Contextual highlight color classes
                     let scoreColorClass = 'text-[#00E676]';
                     let badgeClass = 'bg-success-soft text-[#00E676] border-success-medium';
                     
@@ -161,7 +150,7 @@ export default function TransactionsTable({
                           </span>
                         </td>
                         <td className="p-3 text-body-subtle truncate max-w-[130px]">{tx.location}</td>
-                        <td className="p-3 text-right text-heading font-medium">${tx.amount.toFixed(2)}</td>
+                        <td className="p-3 text-right text-heading font-medium">{tx.amount.toFixed(2)} ₼</td>
                       </tr>
                     );
                   })
@@ -172,27 +161,24 @@ export default function TransactionsTable({
         </div>
 
         <div className="flex items-center justify-between text-[10px] text-body-subtle font-mono border-t border-default pt-3.5 mt-3.5">
-          <span>Showing {filteredTransactions.length} of {transactions.length} buffered streams</span>
+          <span>Showing {filteredTransactions.length} of {transactions.length} buffered payments</span>
           <span className="flex items-center gap-1">
             <span className="w-1.5 h-1.5 bg-[#00E676] rounded-full animate-ping text-[10px]"></span>
-            Autopilot: Generates 1 stream loop / 3.8s
+            Autopilot: Generates 1 payment event / 3.8s
           </span>
         </div>
       </div>
 
-      {/* RIGHT COLUMN: CORE SEC DIAGNOSTICS & ACTIONS (4 COLS) */}
       <div className="lg:col-span-4 flex flex-col justify-between bg-neutral-primary-soft border border-default p-6 clip-card lg:sticky lg:top-6 self-start shadow-lg relative min-h-[500px]">
-        {/* Decorative corner elements */}
         <div className="absolute top-0 right-0 w-6 h-6 border-t border-r border-brand/20"></div>
         <div className="absolute bottom-0 left-0 w-6 h-6 border-b border-l border-brand/20"></div>
 
-        {/* Content area */}
         <div>
           <div className="border-b border-default pb-4.5 mb-5 flex items-center gap-2">
             <Cpu className="w-5 h-5 text-brand" />
             <div>
               <h3 className="font-audiowide uppercase text-xs tracking-wider text-heading font-bold">
-                Security Core Diagnostics
+                Payment Diagnostics
               </h3>
               <p className="text-[9px] font-mono text-body-subtle uppercase mt-0.5">
                 Explainable AI Diagnostics Block
@@ -202,14 +188,13 @@ export default function TransactionsTable({
 
           {activeTx ? (
             <div className="space-y-5 font-mono text-xs">
-              {/* Ledger node address block */}
               <div className="p-3.5 bg-neutral-secondary-medium/90 border border-default-medium">
                 <span className="text-[9px] text-[#54EAFD] uppercase block tracking-wider font-bold mb-1">
-                  ANALYST OVERVIEW
+                  ADMIN OVERVIEW
                 </span>
                 <div className="grid grid-cols-2 gap-y-3.5 gap-x-2 text-[11px] leading-tight mt-1.5">
                   <div>
-                    <span className="block text-[8.5px] text-body-subtle">ENVELOPE NO</span>
+                    <span className="block text-[8.5px] text-body-subtle">PAYMENT NO</span>
                     <span className="text-heading font-bold text-[12px]">{activeTx.id}</span>
                   </div>
                   <div>
@@ -222,49 +207,47 @@ export default function TransactionsTable({
                     </span>
                   </div>
                   <div>
-                    <span className="block text-[8.5px] text-body-subtle">VAL (EUROD)</span>
-                    <span className="text-heading font-bold">${activeTx.amount.toFixed(2)}</span>
+                    <span className="block text-[8.5px] text-body-subtle">AMOUNT (AZN)</span>
+                    <span className="text-heading font-bold">{activeTx.amount.toFixed(2)} ₼</span>
                   </div>
                   <div>
-                    <span className="block text-[8.5px] text-body-subtle">TIME CHIP</span>
+                    <span className="block text-[8.5px] text-body-subtle">TIMESTAMP</span>
                     <span className="text-heading">{activeTx.timestamp}</span>
                   </div>
                 </div>
               </div>
 
-              {/* Customer Identity Card */}
               <div className="space-y-2 text-[11px]">
                 <span className="text-[9px] text-[rgba(84,234,253,0.6)] uppercase block tracking-wider font-bold">
-                  COGNITIVE POSTURE FIELDS
+                  CITIZEN POSTURE FIELDS
                 </span>
                 <div className="space-y-1.5 leading-relaxed bg-neutral-secondary-soft/50 p-3 border border-default text-body">
                   <p className="flex justify-between">
-                    <span>Customer Email:</span>
+                    <span>Citizen Email:</span>
                     <span className="text-heading font-medium truncate block max-w-[140px]">{activeTx.customerEmail}</span>
                   </p>
                   <p className="flex justify-between">
-                    <span>Device Model:</span>
+                    <span>Terminal Model:</span>
                     <span className="text-heading font-medium truncate block max-w-[140px]">{activeTx.deviceType}</span>
                   </p>
                   <p className="flex justify-between">
-                    <span>Settlement Class:</span>
+                    <span>Payment Method:</span>
                     <span className="text-[#00E676]">{activeTx.cardType}</span>
                   </p>
                   <p className="flex justify-between">
-                    <span>Geo Coordinate:</span>
+                    <span>Sector Location:</span>
                     <span className="text-heading truncate block max-w-[140px]">{activeTx.location}</span>
                   </p>
                   <p className="flex justify-between">
-                    <span>Category Node:</span>
+                    <span>Service Category:</span>
                     <span className="text-heading">{activeTx.merchantCategory}</span>
                   </p>
                 </div>
               </div>
 
-              {/* AI Explain reasons */}
               <div className="space-y-2">
                 <span className="text-[9px] text-danger-strong uppercase block tracking-wider font-bold">
-                  EXPLAINABLE REASONS FOR SHIELD COGNITION
+                  EXPLAINABLE AI REASONS
                 </span>
                 <div className="p-3.5 bg-neutral-secondary-medium/60 border border-default border-l-2 border-brand">
                   {activeTx.explainReasons && activeTx.explainReasons.length > 0 ? (
@@ -282,21 +265,65 @@ export default function TransactionsTable({
                             onClick={() => setShowAllReasons(!showAllReasons)}
                             className="text-[9px] font-mono uppercase bg-neutral-primary px-2.5 py-1 border border-default-strong hover:text-brand hover:border-brand-medium text-heading transition-all cursor-pointer select-none font-bold"
                           >
-                            {showAllReasons ? 'Truncate Details ▲' : `Review All Details (${activeTx.explainReasons.length}) ▼`}
+                            {showAllReasons ? 'Collapse ▲' : `View All Details (${activeTx.explainReasons.length}) ▼`}
                           </button>
                         </div>
                       )}
                     </div>
                   ) : (
-                    <p className="text-[11px] text-body-subtle italic"> No anomalic variances reported for this transaction vector envelope.</p>
+                    <p className="text-[11px] text-body-subtle italic">No anomalous variances reported for this payment event.</p>
                   )}
                 </div>
               </div>
 
-              {/* Live Biometric Posture Metric */}
+              {activeTx.riskFactors && (
+                <div className="space-y-2">
+                  <span className="text-[9px] text-[rgba(84,234,253,0.6)] uppercase block tracking-wider font-bold">
+                    AI BEHAVIORAL RISK FACTORS
+                  </span>
+                  <div className="p-3 bg-neutral-secondary-medium/60 border border-default">
+                    <div className="space-y-2 text-[10px] font-mono">
+                      {[
+                        { key: 'failedAttempts', label: 'Failed Attempts', weight: '30%' },
+                        { key: 'amountAnomaly', label: 'Amount Anomaly', weight: '25%' },
+                        { key: 'geoAnomaly', label: 'Geo Anomaly', weight: '20%' },
+                        { key: 'timeAnomaly', label: 'Time Anomaly', weight: '15%' },
+                        { key: 'deviceReputation', label: 'Device Reputation', weight: '10%' },
+                      ].map(f => {
+                        const val = (activeTx.riskFactors as any)[f.key] as number;
+                        const pct = Math.round(val * 100);
+                        let barColor = 'bg-[#00E676]';
+                        if (val > 0.7) barColor = 'bg-danger';
+                        else if (val > 0.4) barColor = 'bg-warning';
+                        return (
+                          <div key={f.key}>
+                            <div className="flex justify-between text-body-subtle mb-0.5">
+                              <span>{f.label}</span>
+                              <span className="text-heading">{pct}% <span className="text-body-subtle">({f.weight})</span></span>
+                            </div>
+                            <div className="w-full bg-neutral-tertiary-medium h-1.5">
+                              <div className={`h-full transition-all duration-300 ${barColor}`} style={{ width: `${pct}%` }}></div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <div className="mt-2.5 pt-1.5 border-t border-default/40 text-[10px] font-mono flex justify-between items-center">
+                      <span className="text-body-subtle">Formula: 0.30F + 0.25A + 0.20G + 0.15T + 0.10D</span>
+                      <span className={`font-audiowide text-xs font-bold ${
+                        activeTx.riskScore >= rules.autoBlockThreshold ? 'text-danger' :
+                        activeTx.riskScore >= rules.mfaThreshold ? 'text-warning' : 'text-[#00E676]'
+                      }`}>
+                        = {activeTx.riskScore}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <div className="space-y-1.5 p-3.5 bg-neutral-secondary-soft border border-default">
                 <div className="flex justify-between text-[10px] text-body-subtle uppercase leading-none mb-1.5">
-                  <span>Neural Posture Stability:</span>
+                  <span>Behavioral Confidence:</span>
                   <span className={activeTx.riskScore > 65 ? 'text-danger' : 'text-[#00E676]'}>
                     {Math.max(12, 100 - activeTx.riskScore)}% Confidence
                   </span>
@@ -315,41 +342,38 @@ export default function TransactionsTable({
           ) : (
             <div className="h-44 flex flex-col items-center justify-center text-center text-body-subtle">
               <Cpu className="w-8 h-8 text-body-subtle/50 mb-3 animate-pulse" />
-              <p>Awaiting signature packet...</p>
+              <p>Awaiting payment signal...</p>
             </div>
           )}
         </div>
 
-        {/* COMMAND VERDICT OVERRIDES */}
         <div className="border-t border-default pt-5 mt-6 space-y-3.5">
           <span className="text-[9px] text-body-subtle font-mono uppercase block tracking-wider leading-none">
-            MANUAL ANALYST COMMAND BRIDGE
+            ADMIN COMMAND BRIDGE
           </span>
           
           <div className="grid grid-cols-2 gap-3.5 text-xs font-audiowide">
-            {/* Override Approve */}
             <button
               disabled={!activeTx || activeTx.status === 'Verified'}
               onClick={() => activeTx && handleOverrideStatus(activeTx.id, 'Verified')}
               className="px-3.5 py-3 border border-[#00C060] bg-[#001A10] hover:bg-[#002E1B] text-[#00E676] tracking-wider uppercase clip-btn inline-flex items-center justify-center gap-1.5 transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
             >
               <CheckCircle2 className="w-4 h-4" />
-              Settle / Pass
+              Approve Payment
             </button>
 
-            {/* Override Revoke */}
             <button
               disabled={!activeTx || activeTx.status === 'Flagged'}
               onClick={() => activeTx && handleOverrideStatus(activeTx.id, 'Flagged')}
               className="px-3.5 py-3 border border-danger bg-danger-soft hover:bg-danger-medium text-danger tracking-wider uppercase clip-btn inline-flex items-center justify-center gap-1.5 transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
             >
               <XCircle className="w-4 h-4" />
-              Revoke / Ban
+              Block / Flag
             </button>
           </div>
 
           <div className="p-2.5 bg-neutral-secondary-soft text-[10px] text-body-subtle font-mono leading-relaxed border-l-2 border-danger-strong select-none">
-            WARNING: Overriding coordinates publishes audit key signatures permanently to the ledger vault.
+            WARNING: Override actions publish audit signatures permanently to the city ledger vault.
           </div>
         </div>
       </div>

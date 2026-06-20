@@ -6,10 +6,10 @@ const router = Router();
 router.use(authMiddleware);
 
 const NODES = [
-  { nodeId: 'sf' as const, name: 'Node Alpha // California', region: 'San Francisco Ocean Tower', ip: '142.250.72.110' },
-  { nodeId: 'london' as const, name: 'Node Beta // United Kingdom', region: 'Canary Wharf Crypt Hub', ip: '216.58.212.14' },
-  { nodeId: 'tokyo' as const, name: 'Node Gamma // Japan Grid', region: 'Neo-Akihabara Server Arcology', ip: '172.217.161.4' },
-  { nodeId: 'amsterdam' as const, name: 'Node Delta // Netherlands', region: 'Amsterdam Central Cyber Vault', ip: '172.217.17.110' },
+  { nodeId: 'baku-central' as const, name: 'Baku Central Smart Grid', region: 'Downtown Data Center', ip: '10.0.1.10' },
+  { nodeId: 'sumqayit' as const, name: 'Sumqayit Industrial Sector', region: 'Western Utility Hub', ip: '10.0.2.20' },
+  { nodeId: 'ganja' as const, name: 'Ganja Transit Authority', region: 'Western Regional Node', ip: '10.0.3.30' },
+  { nodeId: 'khazar' as const, name: 'Khazar Coastal District', region: 'Maritime Infrastructure Zone', ip: '10.0.4.40' },
 ];
 
 // GET /api/nodes - get cluster node metrics

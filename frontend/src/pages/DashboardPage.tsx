@@ -1,15 +1,12 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { Shield, Clock, LogOut } from 'lucide-react';
 import { Transaction, SecurityRules } from '../types';
 import { 
   getInitialTransactions, 
   generateMockTransaction, 
-  getHistoricalTrendData 
+  getHistoricalTrendData,
+  generateRiskFactors,
+  computeRiskScore
 } from '../utils/mockData';
 import { threatApi } from '../api/threatApi';
 import Sidebar, { DashboardTab } from '../components/Sidebar';
@@ -27,26 +24,23 @@ interface DashboardPageProps {
 }
 
 export default function DashboardPage({ userEmail, onLogout }: DashboardPageProps) {
-  // Sidebar navigation states
   const [activeTab, setActiveTab] = useState<DashboardTab>('telemetry');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
-  // Policy Simulator Test and Save policy states
   const [savingPolicy, setSavingPolicy] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
 
-  // Distributed cluster node status and ping timers
   const [nodePingTimes, setNodePingTimes] = useState({
-    sf: 14,
-    london: 48,
-    tokyo: 96,
-    amsterdam: 33
+    'baku-central': 14,
+    'sumqayit': 48,
+    'ganja': 96,
+    'khazar': 33
   });
   const [nodeLoads, setNodeLoads] = useState({
-    sf: 28,
-    london: 12,
-    tokyo: 41,
-    amsterdam: 15
+    'baku-central': 28,
+    'sumqayit': 12,
+    'ganja': 41,
+    'khazar': 15
   });
   const [pingingNodes, setPingingNodes] = useState(false);
 
@@ -69,16 +63,16 @@ export default function DashboardPage({ userEmail, onLogout }: DashboardPageProp
     }
     setTimeout(() => {
       setNodePingTimes({
-        sf: Math.floor(10 + Math.random() * 15),
-        london: Math.floor(40 + Math.random() * 15),
-        tokyo: Math.floor(82 + Math.random() * 20),
-        amsterdam: Math.floor(22 + Math.random() * 15)
+        'baku-central': Math.floor(10 + Math.random() * 15),
+        'sumqayit': Math.floor(40 + Math.random() * 15),
+        'ganja': Math.floor(82 + Math.random() * 20),
+        'khazar': Math.floor(22 + Math.random() * 15)
       });
       setNodeLoads({
-        sf: Math.floor(15 + Math.random() * 40),
-        london: Math.floor(8 + Math.random() * 25),
-        tokyo: Math.floor(30 + Math.random() * 35),
-        amsterdam: Math.floor(10 + Math.random() * 20)
+        'baku-central': Math.floor(15 + Math.random() * 40),
+        'sumqayit': Math.floor(8 + Math.random() * 25),
+        'ganja': Math.floor(30 + Math.random() * 35),
+        'khazar': Math.floor(10 + Math.random() * 20)
       });
       setPingingNodes(false);
     }, 1200);
@@ -104,7 +98,7 @@ export default function DashboardPage({ userEmail, onLogout }: DashboardPageProp
       const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(transactions, null, 2));
       const downloadAnchor = document.createElement('a');
       downloadAnchor.setAttribute("href", dataStr);
-      downloadAnchor.setAttribute("download", `FR_SHIELD_LEDGER_${Date.now()}.json`);
+      downloadAnchor.setAttribute("download", `CITYGUARD_AUDIT_${Date.now()}.json`);
       document.body.appendChild(downloadAnchor);
       downloadAnchor.click();
       downloadAnchor.remove();
@@ -113,7 +107,6 @@ export default function DashboardPage({ userEmail, onLogout }: DashboardPageProp
     }
   };
 
-  // Start with default security rules
   const [rules, setRules] = useState<SecurityRules>({
     mfaThreshold: 60,
     autoBlockThreshold: 85,
@@ -122,29 +115,23 @@ export default function DashboardPage({ userEmail, onLogout }: DashboardPageProp
     dynamicMfaEnabled: true
   });
 
-  // Initialized mock dynamic transactions
   const [transactions, setTransactions] = useState<Transaction[]>(() => 
     getInitialTransactions(12, rules)
   );
 
-  // Active highlighted item ID
   const [selectedTxId, setSelectedTxId] = useState<string | null>(null);
 
-  // Cumulative system status metrics
   const [cumulativeStats, setCumulativeStats] = useState({
     processedCount: 148220,
     liveTps: 24.8,
     activeAlerts: 14
   });
 
-  // Filters state
   const [statusFilter, setStatusFilter] = useState<'All' | 'Verified' | 'Flagged' | 'Under Review'>('All');
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Recharts trend data state
   const [trendData] = useState(() => getHistoricalTrendData());
 
-  // Simulate dynamic stream in background
   useEffect(() => {
     let active = true;
     async function initGatewayTelemetry() {
@@ -189,7 +176,6 @@ export default function DashboardPage({ userEmail, onLogout }: DashboardPageProp
           return updatedList;
         });
       } catch {
-        // Fall back to local generation if backend unavailable
         const newTx = generateMockTransaction(rules);
         setTransactions(prev => {
           const updatedList = [newTx, ...prev];
@@ -217,7 +203,6 @@ export default function DashboardPage({ userEmail, onLogout }: DashboardPageProp
     return () => clearInterval(interval);
   }, [rules, selectedTxId]);
 
-  // Handle setting/overriding status of transaction in memory
   const handleOverrideStatus = async (txId: string, newStatus: Transaction['status']) => {
     try {
       await threatApi.overrideTransactionStatus(txId, newStatus);
@@ -229,19 +214,23 @@ export default function DashboardPage({ userEmail, onLogout }: DashboardPageProp
       if (t.id === txId) {
         let updatedScore = t.riskScore;
         let reasons = t.explainReasons || [];
+        let updatedFactors = t.riskFactors;
         
         if (newStatus === 'Verified') {
-          updatedScore = Math.floor(Math.random() * 15);
-          reasons = ['Manual Override: Analyst approved and greenlisted account chip profile.'];
+          updatedFactors = { failedAttempts: 0, amountAnomaly: 0, geoAnomaly: 0, timeAnomaly: 0, deviceReputation: 0 };
+          updatedScore = 0;
+          reasons = ['Manual Override: Administrator approved and whitelisted citizen payment profile.'];
         } else if (newStatus === 'Flagged') {
-          updatedScore = Math.floor(90 + Math.random() * 10);
-          reasons = ['Analyst Purge Signal: Triggered explicit blacklisting coordinates.'];
+          updatedFactors = { failedAttempts: 0.95, amountAnomaly: 0.90, geoAnomaly: 0.85, timeAnomaly: 0.80, deviceReputation: 0.90 };
+          updatedScore = Math.round(100 * (0.30 * 0.95 + 0.25 * 0.90 + 0.20 * 0.85 + 0.15 * 0.80 + 0.10 * 0.90));
+          reasons = ['Administrator Purge: Payment terminal blacklisted and citizen account flagged for investigation.'];
         }
 
         return {
           ...t,
           status: newStatus,
           riskScore: updatedScore,
+          riskFactors: updatedFactors,
           explainReasons: reasons
         };
       }
@@ -249,13 +238,11 @@ export default function DashboardPage({ userEmail, onLogout }: DashboardPageProp
     }));
   };
 
-  // Find currently highlighted transaction
   const activeTx = useMemo(() => {
     const found = transactions.find(t => t.id === selectedTxId);
     return found || transactions[0] || null;
   }, [transactions, selectedTxId]);
 
-  // Compute filtered outputs
   const filteredTransactions = useMemo(() => {
     return transactions.filter(t => {
       const matchStatus = statusFilter === 'All' || t.status === statusFilter;
@@ -266,7 +253,6 @@ export default function DashboardPage({ userEmail, onLogout }: DashboardPageProp
     });
   }, [transactions, statusFilter, searchQuery]);
 
-  // Calculate live detection metrics
   const currentMetrics = useMemo(() => {
     const totalInList = transactions.length;
     if (totalInList === 0) return { rate: 92.4, alertsCount: 0 };
@@ -286,10 +272,8 @@ export default function DashboardPage({ userEmail, onLogout }: DashboardPageProp
   return (
     <div className="h-screen max-h-screen bg-[#04040A] text-[#7E7F94] flex flex-col pt-1 relative cyber-grid overflow-hidden">
       
-      {/* Dynamic Scanline aesthetic */}
       <div className="scanlines"></div>
 
-      {/* DASHBOARD NAVBAR */}
       <nav className="border-b border-neutral-tertiary-medium bg-neutral-primary px-6 py-4.5 flex justify-between items-center z-10 select-none">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-sm flex items-center justify-center border border-brand bg-brand-softer shadow-[0_0_6px_rgba(84,234,253,0.3)]">
@@ -305,7 +289,7 @@ export default function DashboardPage({ userEmail, onLogout }: DashboardPageProp
               </span>
             </div>
             <div className="text-[10px] font-mono text-body-subtle flex items-center gap-1 mt-0.5 leading-none">
-              <Clock className="w-3 h-3 text-brand" /> CONSOLE // ANALYST: {userEmail}
+              <Clock className="w-3 h-3 text-brand" /> CONSOLE // ADMIN: {userEmail}
             </div>
           </div>
         </div>
@@ -313,7 +297,7 @@ export default function DashboardPage({ userEmail, onLogout }: DashboardPageProp
         <div className="flex items-center gap-4">
           <div className="hidden lg:flex items-center gap-1.5 px-3 py-1 border border-success-medium bg-success-soft text-[#00E676] text-[10px] font-mono uppercase tracking-[1px] leading-none select-none animate-pulse">
             <span className="w-1.5 h-1.5 rounded-full bg-[#00E676] inline-block"></span>
-            DEFENSE SHIELD ONLINE
+            CITY DEFENSE ONLINE
           </div>
           
           <button 
@@ -326,10 +310,8 @@ export default function DashboardPage({ userEmail, onLogout }: DashboardPageProp
         </div>
       </nav>
 
-      {/* DASHBOARD MAIN LAYOUT WORKSPACE */}
       <div className="flex flex-1 relative overflow-hidden">
         
-        {/* COLLAPSIBLE SIDEBAR WITH TRANSITIONS */}
         <Sidebar 
           activeTab={activeTab} 
           onTabChange={setActiveTab} 
@@ -338,49 +320,43 @@ export default function DashboardPage({ userEmail, onLogout }: DashboardPageProp
           userEmail={userEmail}
         />
 
-        {/* CONTROLLER CONTENT AREA */}
         <div className="flex-1 p-6 overflow-y-auto space-y-6 progress-scrollbar min-w-0">
           
-          {/* TAB 1: Real-time Telemetry Dashboard */}
           {activeTab === 'telemetry' && (
             <div className="space-y-6">
               
-              {/* Metrics cards widgets */}
               <MetricsCards 
                 cumulativeStats={cumulativeStats} 
                 currentMetrics={currentMetrics} 
               />
 
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-                {/* Visual area chart */}
                 <div className="lg:col-span-8">
                   <ThreatChart trendData={trendData} />
                 </div>
 
-                {/* Secure threat indicator gauge card */}
                 <div className="lg:col-span-4 bg-neutral-primary-soft border border-default p-5.5 clip-card h-80 flex flex-col justify-between selection-none">
                   <div>
                     <span className="font-mono text-[9px] tracking-widest text-brand uppercase">ANALYSIS ENGINE</span>
                     <h3 className="font-audiowide font-bold text-sm text-heading uppercase tracking-wider mt-1 border-b border-default pb-2">
-                      Sovereign Core Accuracy Intel
+                      AI Detection Accuracy
                     </h3>
                     <p className="text-xs text-body leading-relaxed mt-3">
-                      The cognitive neural network weighs user sequences, IP subnet blocks, and micro-behavior drift coefficients dynamically.
+                      The cognitive neural network evaluates citizen payment sequences, terminal locations, and behavioral drift coefficients dynamically across the smart city grid.
                     </p>
                   </div>
                   <div className="p-4 bg-neutral-secondary-soft border border-default text-center select-none font-sans">
-                    <span className="text-[10px] font-mono text-body-subtle block uppercase">Live Threat Detection Index</span>
+                    <span className="text-[10px] font-mono text-body-subtle block uppercase">Live Threat Detection</span>
                     <p className="font-audiowide text-4xl text-brand font-bold mt-1 tracking-wider leading-none">
                       {currentMetrics.rate}%
                     </p>
                     <span className="text-[9px] font-mono text-success text-[#00E676] uppercase tracking-wide mt-1 block">
-                      ✔ Exceeding traditional accuracy rates +2.4%
+                      ✔ Exceeding traditional accuracy +2.4%
                     </span>
                   </div>
                 </div>
               </div>
 
-              {/* Transactions Ledger component with manual overrides */}
               <TransactionsTable 
                 transactions={transactions}
                 filteredTransactions={filteredTransactions}
@@ -397,7 +373,6 @@ export default function DashboardPage({ userEmail, onLogout }: DashboardPageProp
             </div>
           )}
 
-          {/* TAB 2: Rules configurations */}
           {activeTab === 'rules' && (
             <PolicyForm 
               rules={rules} 
@@ -408,7 +383,6 @@ export default function DashboardPage({ userEmail, onLogout }: DashboardPageProp
             />
           )}
 
-          {/* TAB 3: Cluster Nodes status matrix */}
           {activeTab === 'nodes' && (
             <SecurityClusters 
               nodePingTimes={nodePingTimes}
@@ -419,7 +393,6 @@ export default function DashboardPage({ userEmail, onLogout }: DashboardPageProp
             />
           )}
 
-          {/* TAB 4: Ledger Audit Trails */}
           {activeTab === 'audit' && (
             <AuditLedger 
               filteredTransactions={filteredTransactions}
